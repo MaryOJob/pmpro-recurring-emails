@@ -9,7 +9,7 @@ Author URI: http://www.strangerstudios.com
 */
 /*
 	We want to send a reminder to email to members N days before their membership renews.
-	
+
 	This plugin is meant to be used with recurring membership levels in PMPro. Normally
 	an email is sent when the recurring payment goes through. We want to send an extra
 	email N days before this.
@@ -17,6 +17,15 @@ Author URI: http://www.strangerstudios.com
     The email template, # of messages & days before sending can be configured
     w/the pmpro_upcoming_recurring_payment_reminder filter.
 */
+
+/*
+	Load plugin textdomain.
+*/
+
+function pmprorh_load_textdomain() {
+  load_plugin_textdomain( 'pmpro-recurring-emails', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+}
+add_action( 'plugins_loaded', 'pmprorh_load_textdomain' );
 
 //run our cron at the same time as the expiration warning emails
 add_action( "pmpro_cron_expiration_warnings", "pmpror_recurring_emails", 30 );
@@ -35,11 +44,11 @@ function pmpror_init_test() {
 
 		// Reset send functionality
 		remove_filter( 'pmprorm_send_reminder_to_user', '__return_false' );
-		
+
 		echo '<p>';
 		esc_html_e( 'Finished test. Check your PHP error log for details.', 'pmpro-recurring-emails' );
 		echo '</p>';
-		
+
 		exit;
 	}
 }
@@ -63,7 +72,7 @@ function pmpror_recurring_emails() {
 
 	//get todays date for later calculations
 	$today = date_i18n( "Y-m-d", current_time( "timestamp" ) );
-	
+
 	/**
 	 *  Filter will set how many days before you want to send, and the template to use
 	 *
@@ -85,8 +94,8 @@ function pmpror_recurring_emails() {
 		$recurring_soon = array();
 
 		//look for memberships that are going to renew within a configurable amount of time (1 week by default), but we haven't emailed them yet about it.
-		$sqlQuery = $wpdb->prepare( "      
-			SELECT DISTINCT mo.user_id 
+		$sqlQuery = $wpdb->prepare( "
+			SELECT DISTINCT mo.user_id
 			FROM $wpdb->pmpro_membership_orders mo
 				LEFT JOIN $wpdb->pmpro_memberships_users mu			-- to check for recurring
 					ON mu.user_id = mo.user_id
@@ -119,11 +128,11 @@ function pmpror_recurring_emails() {
 				AND mu.cycle_period IS NOT NULL									-- recurring
 				AND mu.status = 'active'										-- active subs only
 				",
-			"pmpro_recurring_notice_{$days}", // for meta_key to lookup			
+			"pmpro_recurring_notice_{$days}", // for meta_key to lookup
 			"{$today} 00:00:00",			  // for Day w/date
 			"{$today} 00:00:00",			  // for Week w/date
 			"{$today} 00:00:00",			  // for Month w/date
-			"{$today} 00:00:00",			  // for Year w/date			
+			"{$today} 00:00:00",			  // for Year w/date
 			"{$today} 23:59:59", 			  // for Day w/date & interval
 			$days,                 			  // for Day w/date & interval
 			"{$today} 23:59:59", 			  // for Week w/date & interval
@@ -154,7 +163,7 @@ function pmpror_recurring_emails() {
 		if ( WP_DEBUG ) {
 			error_log( "Found {$wpdb->num_rows} records..." );
 		}
-	
+
 		foreach ( $recurring_soon as $e ) {
 
 			if ( ! in_array( $e->user_id, $sent_emails ) ) {
@@ -166,12 +175,12 @@ function pmpror_recurring_emails() {
 				//send an email
 				$pmproemail = new PMProEmail();
 				$euser      = get_userdata( $e->user_id );
-				
+
 				// Make sure we have a user.
 				if ( empty( $euser ) ) {
 					continue;
 				}
-				
+
 				//make sure we have the current membership level data
 				$euser->membership_level = pmpro_getMembershipLevelForUser( $euser->ID );
 
