@@ -22,13 +22,13 @@ Author URI: http://www.strangerstudios.com
 	Load plugin textdomain.
 */
 
-function pmprorh_load_textdomain() {
+function pmprore_load_textdomain() {
   load_plugin_textdomain( 'pmpro-recurring-emails', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
 }
 add_action( 'plugins_loaded', 'pmprorh_load_textdomain' );
 
 //run our cron at the same time as the expiration warning emails
-add_action( "pmpro_cron_expiration_warnings", "pmpror_recurring_emails", 30 );
+add_action( "pmpro_cron_expiration_warnings", "pmprore_recurring_emails", 30 );
 
 /**
  * Manually trigger the process (test)
